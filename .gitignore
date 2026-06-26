@@ -1,0 +1,11 @@
+# Environment variables (never commit your real key!)
+.env
+.env.local
+
+# Vercel
+.vercel
+
+# Dependencies / OS
+node_modules
+.DS_Store
+Thumbs.db

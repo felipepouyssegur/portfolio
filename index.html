@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Felipe Pouysségur — Test Automation Engineer</title>
+  <meta name="description" content="Felipe Pouysségur — Test Automation Engineer specialized in Playwright, Python, Tosca and agentic AI." />
+
+  <!-- Set the theme before first paint to avoid a flash of the wrong colors.
+       Defaults to dark; honors a saved choice, otherwise the OS preference. -->
+  <script>
+    (function () {
+      var saved = localStorage.getItem('theme');
+      var theme = saved
+        || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+
+  <!-- Inter font from Google Fonts (falls back to Arial if it fails to load) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       DESIGN TOKENS
+       ============================================================ */
+    :root {
+      --radius:    14px;
+      --maxw:      1080px;
+      --font: 'Inter', Arial, Helvetica, sans-serif;
+    }
+
+    /* ---- Dark theme (default) ---- */
+    :root[data-theme="dark"] {
+      --bg:         #0D1117;   /* dark background */
+      --bg-soft:    #161B22;   /* cards / panels  */
+      --bg-soft-2:  #1C232D;   /* hover surfaces  */
+      --border:     #2A313C;   /* subtle borders  */
+      --accent:     #1A6FA8;   /* primary accent  */
+      --accent-2:   #2E8FD0;   /* lighter accent  */
+      --accent-rgb: 26, 111, 168;
+      --text:       #E6EDF3;   /* main text       */
+      --text-dim:   #9DA7B3;   /* secondary text  */
+      --nav-bg:     rgba(13, 17, 23, 0.8);
+      --bg-gradient: linear-gradient(160deg, #0D1117 0%, #11171F 50%, #16202C 100%);
+      --shadow:     0 16px 48px rgba(0, 0, 0, 0.5);
+    }
+
+    /* ---- Light theme (soft grey, not bright white) ---- */
+    :root[data-theme="light"] {
+      --bg:         #E7EAEF;   /* page base — muted grey */
+      --bg-soft:    #F0F2F5;   /* cards / panels — off-white, not pure white */
+      --bg-soft-2:  #E2E6EC;   /* hover surfaces  */
+      --border:     #CDD4DD;   /* subtle borders  */
+      --accent:     #1A6FA8;   /* primary accent  */
+      --accent-2:   #155C87;   /* darker accent for text/links on light */
+      --accent-rgb: 26, 111, 168;
+      --text:       #1B232C;
+      --text-dim:   #56616D;
+      --nav-bg:     rgba(231, 234, 239, 0.82);
+      --bg-gradient: linear-gradient(160deg, #E7EAEF 0%, #E1E5EB 50%, #DAE0E7 100%);
+      --shadow:     0 16px 40px rgba(24, 34, 44, 0.14);
+    }
+
+    /* ============================================================
+       RESET & BASE
+       ============================================================ */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      /* full-page gradient (the scroll script lightens it as you scroll) */
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      transition: color 0.3s ease;
+    }
+
+    /* Smooth the surface/border color swap when toggling theme */
+    .skill-card, .project-card, .ai-tool-card, .badge, .btn,
+    nav, .chat-panel, .timeline-item .dot, .spy-dot, footer {
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease,
+                  transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    /* Keyboard focus visibility (accessibility nicety) */
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+    a { color: inherit; text-decoration: none; }
+
+    img { max-width: 100%; display: block; }
+
+    section { padding: 70px 24px; }
+
+    .container { max-width: var(--maxw); margin: 0 auto; }
+
+    /* Section titles ------------------------------------------------ */
+    .section-title {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+    .section-title span { color: var(--accent-2); }
+
+    .section-subtitle {
+      color: var(--text-dim);
+      margin-bottom: 48px;
+      max-width: 640px;
+      font-size: 1rem;
+    }
+
+    /* ============================================================
+       NAVBAR
+       ============================================================ */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      position: relative;
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;   /* lang switch centered */
+    }
+
+    /* Theme toggle (pinned right, lang switch stays centered) */
+    .theme-toggle {
+      position: absolute;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, transform 0.2s;
+    }
+    .theme-toggle:hover { color: var(--accent-2); border-color: var(--accent); transform: translateY(-50%) scale(1.06); }
+    .theme-toggle svg { width: 18px; height: 18px; }
+    /* Show the icon that matches the CURRENT theme */
+    :root[data-theme="dark"] .theme-toggle .icon-sun  { display: none; }
+    :root[data-theme="light"] .theme-toggle .icon-moon { display: none; }
+    @media (max-width: 480px) { .theme-toggle { right: 16px; } }
+
+    /* Language switcher -------------------------------------------- */
+    .lang-switch {
+      display: flex;
+      gap: 3px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px;
+      background: var(--bg-soft);
+    }
+    .lang-switch button {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-family: var(--font);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 5px 11px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .lang-switch button:hover { color: var(--text); }
+    .lang-switch button.active { background: var(--accent); color: #fff; }
+
+    /* ============================================================
+       LANGUAGE SWITCH ANIMATION
+       Translatable nodes fade + blur out, swap text, then fade in.
+       ============================================================ */
+    [data-i18n], [data-i18n-html] {
+      transition: opacity 0.16s ease, filter 0.16s ease, transform 0.16s ease;
+    }
+    body.lang-switching [data-i18n],
+    body.lang-switching [data-i18n-html] {
+      opacity: 0;
+      filter: blur(5px);
+      transform: translateY(4px);
+    }
+
+    /* ============================================================
+       SCROLL SECTION INDICATOR (right side)
+       ============================================================ */
+    .scroll-spy {
+      position: fixed;
+      top: 50%;
+      right: 22px;
+      transform: translateY(-50%);
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      align-items: flex-end;
+    }
+    .spy-dot {
+      position: relative;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.25s, transform 0.25s;
+      display: block;
+    }
+    .spy-dot:hover { background: var(--accent-2); transform: scale(1.25); }
+    .spy-dot.active {
+      background: var(--accent);
+      transform: scale(1.35);
+      box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.22);
+    }
+    /* hover label */
+    .spy-label {
+      position: absolute;
+      right: 22px;
+      top: 50%;
+      transform: translateY(-50%) translateX(6px);
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 600;
+      white-space: nowrap;
+      padding: 4px 10px;
+      border-radius: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .spy-dot:hover .spy-label,
+    .spy-dot.active .spy-label {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
+    /* Hide the side indicator on small screens to avoid clutter */
+    @media (max-width: 720px) { .scroll-spy { display: none; } }
+
+    /* ============================================================
+       HERO
+       ============================================================ */
+    .hero {
+      min-height: calc(100vh - 60px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      padding-top: 40px;
+      padding-bottom: 40px;
+    }
+    /* animated particle-network canvas */
+    .hero-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      /* fade the network out toward the edges so it blends into the page */
+      -webkit-mask-image: radial-gradient(ellipse 75% 75% at 50% 45%, #000 55%, transparent 100%);
+      mask-image: radial-gradient(ellipse 75% 75% at 50% 45%, #000 55%, transparent 100%);
+    }
+    .hero .container { position: relative; z-index: 2; }
+
+    .footer-location {
+      margin-bottom: 8px;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 7vw, 4.2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      margin-bottom: 14px;
+    }
+    .hero h2 {
+      font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+      font-weight: 600;
+      color: var(--accent-2);
+      margin-bottom: 20px;
+    }
+    .hero p.tagline {
+      color: var(--text-dim);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin-bottom: 34px;
+    }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
+
+    /* Buttons ------------------------------------------------------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+      background: var(--bg-soft);
+      color: var(--text);
+      cursor: pointer;
+      transition: transform 0.15s, background 0.2s, border-color 0.2s;
+    }
+    .btn:hover { transform: translateY(-2px); border-color: var(--accent); }
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .btn-primary:hover { background: var(--accent-2); border-color: var(--accent-2); }
+    .btn svg { width: 18px; height: 18px; }
+
+    /* ============================================================
+       ABOUT
+       ============================================================ */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      max-width: 760px;
+    }
+    .about-grid strong { color: var(--text); font-weight: 600; }
+    .about-grid .accent { color: var(--accent-2); font-weight: 600; }
+
+    /* ============================================================
+       SKILLS
+       ============================================================ */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+    @media (max-width: 860px) { .skills-grid { grid-template-columns: 1fr; } }
+
+    .skill-card {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 26px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .skill-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+    .skill-card .icon {
+      width: 46px; height: 46px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 12px;
+      background: rgba(var(--accent-rgb), 0.15);
+      color: var(--accent-2);
+      margin-bottom: 16px;
+    }
+    .skill-card .icon svg { width: 24px; height: 24px; }
+    .skill-card h3 { font-size: 1.15rem; margin-bottom: 16px; font-weight: 700; }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+    .badge {
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--bg-soft-2);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .badge:hover { color: var(--text); border-color: var(--accent); }
+
+    /* ============================================================
+       EXPERIENCE TIMELINE
+       ============================================================ */
+    .timeline {
+      position: relative;
+      max-width: 760px;
+      margin-left: 6px;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: var(--border);
+    }
+    .timeline-item {
+      position: relative;
+      padding-left: 38px;
+      padding-bottom: 38px;
+    }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-item .dot {
+      position: absolute;
+      left: 0;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 3px solid var(--bg);
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+    .timeline-item .period {
+      font-size: 0.85rem;
+      color: var(--accent-2);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .timeline-item h3 { font-size: 1.15rem; font-weight: 700; }
+    .timeline-item .role { color: var(--text); font-weight: 500; margin: 2px 0 8px; }
+    .timeline-item p { color: var(--text-dim); font-size: 0.97rem; }
+
+    /* ============================================================
+       PROJECTS
+       ============================================================ */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+    @media (max-width: 860px) { .projects-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .projects-grid { grid-template-columns: 1fr; } }
+
+    .project-card {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .project-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+    .project-card .proj-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .project-card .proj-icon {
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      background: rgba(var(--accent-rgb), 0.15);
+      color: var(--accent-2);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .project-card .proj-icon svg { width: 22px; height: 22px; }
+    .project-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .project-card p { color: var(--text-dim); font-size: 0.92rem; flex-grow: 1; margin-bottom: 16px; }
+    .project-card .proj-link {
+      color: var(--accent-2);
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .project-card .proj-link svg { width: 15px; height: 15px; }
+    .project-card .proj-link:hover { color: var(--text); }
+
+    /* ============================================================
+       AI TOOLS
+       ============================================================ */
+    .ai-tools-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 22px;
+    }
+    @media (max-width: 700px) { .ai-tools-grid { grid-template-columns: 1fr; } }
+    .ai-tool-card {
+      background: linear-gradient(160deg, var(--bg-soft), var(--bg-soft-2));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .ai-tool-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+    .ai-tool-card .icon {
+      width: 46px; height: 46px;
+      border-radius: 12px;
+      background: rgba(var(--accent-rgb), 0.18);
+      color: var(--accent-2);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .ai-tool-card .icon svg { width: 24px; height: 24px; }
+    .ai-tool-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+    .ai-tool-card p { color: var(--text-dim); font-size: 0.97rem; }
+    .ai-tool-card .tag {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent-2);
+      background: rgba(var(--accent-rgb), 0.12);
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    /* ============================================================
+       CONTACT
+       ============================================================ */
+    .contact { text-align: center; }
+    .contact .section-subtitle { margin: 0 auto 36px; }
+    .contact-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 14px; }
+
+    footer {
+      text-align: center;
+      padding: 30px 24px;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ============================================================
+       AI CHAT WIDGET
+       ============================================================ */
+    .chat-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      z-index: 100;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .chat-fab:hover { transform: scale(1.08); background: var(--accent-2); }
+    .chat-fab svg { width: 26px; height: 26px; }
+
+    .chat-panel {
+      position: fixed;
+      bottom: 96px;
+      right: 24px;
+      width: 370px;
+      max-width: calc(100vw - 32px);
+      height: 520px;
+      max-height: calc(100vh - 130px);
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      opacity: 0;
+      transform: translateY(20px) scale(0.96);
+      pointer-events: none;
+      transition: opacity 0.22s, transform 0.22s;
+    }
+    .chat-panel.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+
+    .chat-header {
+      background: var(--accent);
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .chat-header .avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      color: #fff;
+    }
+    .chat-header .info h4 { color: #fff; font-size: 0.98rem; font-weight: 700; }
+    .chat-header .info span { color: rgba(255, 255, 255, 0.8); font-size: 0.78rem; }
+    .chat-header .close-btn {
+      margin-left: auto;
+      background: none; border: none; color: #fff;
+      cursor: pointer; font-size: 1.4rem; line-height: 1;
+      opacity: 0.85;
+    }
+    .chat-header .close-btn:hover { opacity: 1; }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .chat-messages::-webkit-scrollbar { width: 6px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+
+    .msg {
+      max-width: 82%;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    .msg.bot {
+      background: var(--bg-soft-2);
+      color: var(--text);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .msg.user {
+      background: var(--accent);
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    .msg.error {
+      background: rgba(220, 80, 80, 0.15);
+      color: #ff9b9b;
+      align-self: flex-start;
+      font-size: 0.85rem;
+    }
+
+    /* typing indicator */
+    .typing { display: flex; gap: 4px; align-items: center; padding: 14px; }
+    .typing span {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      animation: blink 1.3s infinite ease-in-out both;
+    }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+      40% { opacity: 1; transform: translateY(-3px); }
+    }
+
+    .chat-suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 18px 10px;
+    }
+    .chat-suggestions button {
+      font-size: 0.78rem;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-soft-2);
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .chat-suggestions button:hover { color: var(--text); border-color: var(--accent); }
+
+    .chat-input {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-soft);
+    }
+    .chat-input input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.92rem;
+      outline: none;
+    }
+    .chat-input input:focus { border-color: var(--accent); }
+    .chat-input button {
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      width: 42px;
+      color: #fff;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .chat-input button:hover { background: var(--accent-2); }
+    .chat-input button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .chat-input button svg { width: 18px; height: 18px; }
+
+    /* Reveal-on-scroll animation */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s, transform 0.6s; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ============================================================
+       REFINEMENTS — typography polish + microinteractions
+       ============================================================ */
+    .section-title { font-weight: 800; letter-spacing: -0.025em; }
+    .section-subtitle { line-height: 1.55; }
+    .hero h2 { letter-spacing: -0.01em; }
+
+    /* Small accent rule beside section headings (skips the centered contact) */
+    section:not(.contact) .section-title { display: inline-flex; align-items: center; gap: 14px; }
+    section:not(.contact) .section-title::before {
+      content: "";
+      width: 26px;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* Buttons settle on press */
+    .btn:active { transform: translateY(0) scale(0.98); }
+
+    /* Project arrow nudges outward on hover */
+    .project-card .proj-link svg { transition: transform 0.2s ease; }
+    .project-card:hover .proj-link svg { transform: translate(3px, -3px); }
+
+    /* Icons lift subtly with their card */
+    .skill-card .icon, .ai-tool-card .icon, .project-card .proj-icon { transition: transform 0.25s ease; }
+    .skill-card:hover .icon,
+    .ai-tool-card:hover .icon,
+    .project-card:hover .proj-icon { transform: scale(1.08); }
+
+    .badge:hover { transform: translateY(-1px); }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       NAVBAR
+       ============================================================ -->
+  <nav>
+    <div class="nav-inner">
+      <!-- Language switcher (centered) -->
+      <div class="lang-switch" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="es">ES</button>
+      </div>
+
+      <!-- Light / dark theme toggle -->
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle light / dark theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============================================================
+       SCROLL SECTION INDICATOR (right side)
+       Dots that highlight the section currently in view.
+       ============================================================ -->
+  <nav class="scroll-spy" aria-label="Section navigation">
+    <a href="#home"      class="spy-dot" data-section="home"><span class="spy-label" data-i18n="nav.home">Home</span></a>
+    <a href="#about"     class="spy-dot" data-section="about"><span class="spy-label" data-i18n="nav.about">About</span></a>
+    <a href="#skills"    class="spy-dot" data-section="skills"><span class="spy-label" data-i18n="nav.skills">Skills</span></a>
+    <a href="#experience" class="spy-dot" data-section="experience"><span class="spy-label" data-i18n="nav.experience">Experience</span></a>
+    <a href="#projects"  class="spy-dot" data-section="projects"><span class="spy-label" data-i18n="nav.projects">Projects</span></a>
+    <a href="#contact"   class="spy-dot" data-section="contact"><span class="spy-label" data-i18n="nav.contact">Contact</span></a>
+  </nav>
+
+  <!-- ============================================================
+       HERO
+       ============================================================ -->
+  <header class="hero" id="home">
+    <!-- Animated particle-network background (subtle) -->
+    <canvas class="hero-canvas" id="heroCanvas" aria-hidden="true"></canvas>
+    <div class="container">
+      <h1>Felipe Pouysségur</h1>
+      <h2 data-i18n="hero.title">Test Automation Engineer</h2>
+      <p class="tagline" data-i18n="hero.tagline">
+        I build reliable automated testing solutions with Playwright &amp; Python,
+        and explore agentic AI to make QA smarter. 4 years turning manual chaos into clean, scalable automation.
+      </p>
+      <div class="hero-actions">
+        <!-- CV download (href + filename switch with language) -->
+        <a class="btn btn-primary" id="cvLink" href="cv-en.pdf" download="CV_Felipe_Pouyssegur_EN.pdf">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span data-i18n="hero.cv">Download CV</span>
+        </a>
+        <!-- LinkedIn -->
+        <a class="btn" href="https://www.linkedin.com/in/felipe-pouyssegur" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33 0-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+          LinkedIn
+        </a>
+        <!-- GitHub -->
+        <a class="btn" href="https://github.com/felipepouyssegur" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-1.7c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       ABOUT
+       ============================================================ -->
+  <section id="about">
+    <div class="container reveal">
+      <h2 class="section-title" data-i18n-html="about.title">About <span>me</span></h2>
+      <p class="section-subtitle" data-i18n="about.subtitle">From courtrooms to test suites — a non-linear path into tech.</p>
+      <div class="about-grid">
+        <p data-i18n-html="about.p1">
+          I started my career in <strong>Law</strong>, but in <span class="accent">2022</span> I made the leap
+          into IT. I taught myself <strong>JavaScript</strong> through Argentina Programa and completed a
+          full-stack development program at <strong>Coderhouse</strong>.
+        </p>
+        <p data-i18n-html="about.p2">
+          I joined <strong>Accenture</strong> through a testing bootcamp, and that's where I found my focus.
+          Today I specialize in <strong>Playwright + Python</strong> and <strong>agentic AI</strong> — I led the
+          migration from Tosca to Playwright at Banco Patagonia and independently automated a complete banking
+          channel from scratch.
+        </p>
+        <p data-i18n-html="about.p3">
+          I'm endlessly curious about how <span class="accent">large language models</span> and the
+          <span class="accent"> Model Context Protocol</span> can reshape QA workflows, and I build my own
+          AI-powered tools to put those ideas into practice.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       SKILLS
+       ============================================================ -->
+  <section id="skills">
+    <div class="container reveal">
+      <h2 class="section-title" data-i18n-html="skills.title">Skills &amp; <span>Tools</span></h2>
+      <p class="section-subtitle" data-i18n="skills.subtitle">The stack I use to design, automate and ship quality.</p>
+      <div class="skills-grid">
+
+        <!-- Testing & Automation -->
+        <div class="skill-card">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <h3 data-i18n="skills.testing">Testing &amp; Automation</h3>
+          <div class="badges">
+            <span class="badge">Tricentis Tosca</span>
+            <span class="badge">Playwright</span>
+            <span class="badge">Pytest</span>
+            <span class="badge">Python</span>
+            <span class="badge">Page Object Model</span>
+            <span class="badge">Jira</span>
+          </div>
+        </div>
+
+        <!-- AI & Other -->
+        <div class="skill-card">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.5"/><circle cx="15" cy="9" r="1.5"/><path d="M8 15h8"/></svg>
+          </div>
+          <h3 data-i18n="skills.ai">AI &amp; Other</h3>
+          <div class="badges">
+            <span class="badge">Agentic AI</span>
+            <span class="badge">MCP</span>
+            <span class="badge" data-i18n="skills.english">English C1</span>
+          </div>
+        </div>
+
+        <!-- Development -->
+        <div class="skill-card">
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <h3 data-i18n="skills.development">Development</h3>
+          <div class="badges">
+            <span class="badge">JavaScript</span>
+            <span class="badge">React</span>
+            <span class="badge">Node.js</span>
+            <span class="badge">HTML &amp; CSS</span>
+            <span class="badge">Git</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       EXPERIENCE
+       ============================================================ -->
+  <section id="experience">
+    <div class="container reveal">
+      <h2 class="section-title" data-i18n-html="exp.title">Experience <span>timeline</span></h2>
+      <p class="section-subtitle" data-i18n="exp.subtitle">The road so far.</p>
+      <div class="timeline">
+
+        <div class="timeline-item">
+          <span class="dot"></span>
+          <span class="period" data-i18n="exp.acc.period">Aug 2023 – Present</span>
+          <h3>Accenture</h3>
+          <p class="role" data-i18n="exp.acc.role">Test Automation Engineer</p>
+          <p data-i18n="exp.acc.desc">Led the Tosca → Playwright (Python) migration at Banco Patagonia and incorporated agentic AI and MCP into automation workflows. Independently automated a complete banking channel from scratch.</p>
+        </div>
+
+        <div class="timeline-item">
+          <span class="dot"></span>
+          <span class="period" data-i18n="exp.dt.period">Feb 2023 – Aug 2023</span>
+          <h3>DT235</h3>
+          <p class="role" data-i18n="exp.dt.role">Full-Stack Developer</p>
+          <p data-i18n="exp.dt.desc">Worked on web development projects building features with JavaScript, React and Node.js while sharpening my engineering fundamentals.</p>
+        </div>
+
+        <div class="timeline-item">
+          <span class="dot"></span>
+          <span class="period">2020 – 2023</span>
+          <h3>Estudio Jurídico N&amp;P</h3>
+          <p class="role" data-i18n="exp.law.role">Legal Background</p>
+          <p data-i18n="exp.law.desc">Started my professional career in Law before transitioning into IT in 2022 — bringing analytical rigor and attention to detail into tech.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       PROJECTS
+       ============================================================ -->
+  <section id="projects">
+    <div class="container reveal">
+      <h2 class="section-title" data-i18n-html="proj.title">Featured <span>projects</span></h2>
+      <p class="section-subtitle" data-i18n="proj.subtitle">Personal builds where I learn by shipping.</p>
+      <div class="projects-grid">
+
+        <!-- CHAT XP -->
+        <div class="project-card">
+          <div class="proj-top">
+            <div class="proj-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+            <span class="badge">React + Firebase</span>
+          </div>
+          <h3>CHAT XP</h3>
+          <p data-i18n="proj.chatxp">A real-time chat application with authentication and live messaging, built with React and Firebase.</p>
+          <a class="proj-link" href="https://github.com/felipepouyssegur" target="_blank" rel="noopener"><span data-i18n="proj.view">View project</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+          </a>
+        </div>
+
+        <!-- TYPING GAME -->
+        <div class="project-card">
+          <div class="proj-top">
+            <div class="proj-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg></div>
+            <span class="badge">React</span>
+          </div>
+          <h3>TYPING GAME</h3>
+          <p data-i18n="proj.typing">An interactive typing-speed game that measures words per minute and accuracy, built with React.</p>
+          <a class="proj-link" href="https://github.com/felipepouyssegur" target="_blank" rel="noopener"><span data-i18n="proj.view">View project</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+          </a>
+        </div>
+
+        <!-- DELIGHT -->
+        <div class="project-card">
+          <div class="proj-top">
+            <div class="proj-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg></div>
+            <span class="badge">React</span>
+          </div>
+          <h3>DELIGHT</h3>
+          <p data-i18n="proj.delight">A full-featured e-commerce store with a cart, product catalog and checkout flow, built with React.</p>
+          <a class="proj-link" href="https://github.com/felipepouyssegur" target="_blank" rel="noopener"><span data-i18n="proj.view">View project</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+          </a>
+        </div>
+
+        <!-- LOTUS SHOP -->
+        <div class="project-card">
+          <div class="proj-top">
+            <div class="proj-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+            <span class="badge">JavaScript</span>
+          </div>
+          <h3>LOTUS SHOP</h3>
+          <p data-i18n="proj.lotus">A vanilla-JavaScript e-commerce experience with dynamic product rendering and cart logic.</p>
+          <a class="proj-link" href="https://github.com/felipepouyssegur" target="_blank" rel="noopener"><span data-i18n="proj.view">View project</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+          </a>
+        </div>
+
+        <!-- KURT BURGERS -->
+        <div class="project-card">
+          <div class="proj-top">
+            <div class="proj-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h16M4 14h16M5 18h14a2 2 0 0 0 2-2H3a2 2 0 0 0 2 2zM3 10a9 9 0 0 1 18 0"/></svg></div>
+            <span class="badge">HTML &amp; CSS</span>
+          </div>
+          <h3>KURT BURGERS</h3>
+          <p data-i18n="proj.kurt">A responsive restaurant landing page crafted with pure HTML &amp; CSS and a strong visual identity.</p>
+          <a class="proj-link" href="https://github.com/felipepouyssegur" target="_blank" rel="noopener"><span data-i18n="proj.view">View project</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       CONTACT
+       ============================================================ -->
+  <section id="contact" class="contact">
+    <div class="container reveal">
+      <h2 class="section-title" data-i18n-html="contact.title">Let's <span>connect</span></h2>
+      <p class="section-subtitle" data-i18n="contact.subtitle">Open to opportunities and collaborations in test automation and AI.</p>
+      <div class="contact-actions">
+        <a class="btn btn-primary" href="mailto:felipepouyssegur@hotmail.com">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 5L2 7"/></svg>
+          felipepouyssegur@hotmail.com
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="footer-location">📍 <span data-i18n="hero.location">Mar del Plata, Argentina</span></p>
+    © <span id="year"></span> <span data-i18n="footer.text">Built by Felipe Pouysségur</span>
+  </footer>
+
+  <!-- ============================================================
+       AI CHAT WIDGET
+       ============================================================ -->
+  <!-- Floating button -->
+  <button class="chat-fab" id="chatFab" aria-label="Open chat assistant">
+    <svg id="fabIconChat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+  </button>
+
+  <!-- Chat panel -->
+  <div class="chat-panel" id="chatPanel" aria-live="polite">
+    <div class="chat-header">
+      <div class="avatar">FP</div>
+      <div class="info">
+        <h4 data-i18n="chat.header">Ask about Felipe</h4>
+        <span data-i18n="chat.powered">Powered by Claude</span>
+      </div>
+      <button class="close-btn" id="chatClose" aria-label="Close chat">&times;</button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg bot" data-i18n="chat.welcome">Hi! 👋 I'm Felipe's portfolio assistant. Ask me anything about his experience, skills or projects.</div>
+    </div>
+
+    <div class="chat-suggestions" id="chatSuggestions">
+      <button data-i18n="chat.s1">What does Felipe do?</button>
+      <button data-i18n="chat.s2">Tell me about his Playwright work</button>
+      <button data-i18n="chat.s3">What AI tools has he built?</button>
+    </div>
+
+    <form class="chat-input" id="chatForm">
+      <input type="text" id="chatInput" placeholder="Type your question..." data-i18n-placeholder="chat.placeholder" autocomplete="off" />
+      <button type="submit" id="chatSend" aria-label="Send message">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </form>
+  </div>
+
+  <!-- ============================================================
+       JAVASCRIPT
+       ============================================================ -->
+  <script>
+    /* ==================================================================
+       INTERNATIONALIZATION (i18n)
+       All translatable strings live here, keyed by data-i18n attributes
+       in the markup. Switching language re-applies these instantly.
+       ================================================================== */
+    const translations = {
+      en: {
+        // Navbar / section indicator
+        'nav.home': 'Home',
+        'nav.about': 'About',
+        'nav.skills': 'Skills',
+        'nav.experience': 'Experience',
+        'nav.projects': 'Projects',
+        'nav.aitools': 'AI Tools',
+        'nav.contact': 'Contact',
+        // Hero
+        'hero.location': 'Mar del Plata, Argentina',
+        'hero.title': 'Test Automation Engineer',
+        'hero.tagline': 'I build reliable automated testing solutions with Playwright & Python, and explore agentic AI to make QA smarter. 4 years turning manual chaos into clean, scalable automation.',
+        'hero.cv': 'Download CV',
+        // About
+        'about.title': 'About <span>me</span>',
+        'about.subtitle': 'From courtrooms to test suites — a non-linear path into tech.',
+        'about.p1': 'I started my career in <strong>Law</strong>, but in <span class="accent">2022</span> I made the leap into IT. I taught myself <strong>JavaScript</strong> through Argentina Programa and completed a full-stack development program at <strong>Coderhouse</strong>.',
+        'about.p2': 'I joined <strong>Accenture</strong> through a testing bootcamp, and that\'s where I found my focus. Today I specialize in <strong>Playwright + Python</strong> and <strong>agentic AI</strong> — I led the migration from Tosca to Playwright at Banco Patagonia and independently automated a complete banking channel from scratch.',
+        'about.p3': 'I\'m endlessly curious about how <span class="accent">large language models</span> and the <span class="accent">Model Context Protocol</span> can reshape QA workflows, and I build my own AI-powered tools to put those ideas into practice.',
+        // Skills
+        'skills.title': 'Skills &amp; <span>Tools</span>',
+        'skills.subtitle': 'The stack I use to design, automate and ship quality.',
+        'skills.testing': 'Testing & Automation',
+        'skills.development': 'Development',
+        'skills.ai': 'AI & Other',
+        'skills.english': 'English C1',
+        // Experience
+        'exp.title': 'Experience <span>timeline</span>',
+        'exp.subtitle': 'The road so far.',
+        'exp.acc.period': 'Aug 2023 – Present',
+        'exp.acc.role': 'Test Automation Engineer',
+        'exp.acc.desc': 'Led the Tosca → Playwright (Python) migration at Banco Patagonia and incorporated agentic AI and MCP into automation workflows. Independently automated a complete banking channel from scratch.',
+        'exp.dt.period': 'Feb 2023 – Aug 2023',
+        'exp.dt.role': 'Full-Stack Developer',
+        'exp.dt.desc': 'Worked on web development projects building features with JavaScript, React and Node.js while sharpening my engineering fundamentals.',
+        'exp.law.role': 'Legal Background',
+        'exp.law.desc': 'Started my professional career in Law before transitioning into IT in 2022 — bringing analytical rigor and attention to detail into tech.',
+        // Projects
+        'proj.title': 'Featured <span>projects</span>',
+        'proj.subtitle': 'Personal builds where I learn by shipping.',
+        'proj.view': 'View project',
+        'proj.chatxp': 'A real-time chat application with authentication and live messaging, built with React and Firebase.',
+        'proj.typing': 'An interactive typing-speed game that measures words per minute and accuracy, built with React.',
+        'proj.delight': 'A full-featured e-commerce store with a cart, product catalog and checkout flow, built with React.',
+        'proj.lotus': 'A vanilla-JavaScript e-commerce experience with dynamic product rendering and cart logic.',
+        'proj.kurt': 'A responsive restaurant landing page crafted with pure HTML & CSS and a strong visual identity.',
+        // AI Tools
+        'ai.title': 'AI <span>Tools</span>',
+        'ai.subtitle': 'Personal tools I built with the Claude API to speed up everyday work.',
+        'ai.prompt': 'An assistant that rewrites and refines prompts for clarity, structure and better LLM results — turning rough ideas into precise, high-quality instructions.',
+        'ai.excel': 'An agentic tool that reads, interprets and answers questions about spreadsheet data in natural language — automating tedious data lookups and summaries.',
+        // Contact
+        'contact.title': 'Let\'s <span>connect</span>',
+        'contact.subtitle': 'Open to opportunities and collaborations in test automation and AI.',
+        // Footer
+        'footer.text': 'Built by Felipe Pouysségur',
+        // Chat
+        'chat.header': 'Ask about Felipe',
+        'chat.powered': 'Powered by Claude',
+        'chat.welcome': "Hi! 👋 I'm Felipe's portfolio assistant. Ask me anything about his experience, skills or projects.",
+        'chat.s1': 'What does Felipe do?',
+        'chat.s2': 'Tell me about his Playwright work',
+        'chat.s3': 'What AI tools has he built?',
+        'chat.placeholder': 'Type your question...',
+        'chat.error': '⚠️ Something went wrong while contacting the assistant. Please try again in a moment.'
+      },
+      es: {
+        // Navbar / section indicator
+        'nav.home': 'Inicio',
+        'nav.about': 'Sobre mí',
+        'nav.skills': 'Habilidades',
+        'nav.experience': 'Experiencia',
+        'nav.projects': 'Proyectos',
+        'nav.aitools': 'Herramientas IA',
+        'nav.contact': 'Contacto',
+        // Hero
+        'hero.location': 'Mar del Plata, Argentina',
+        'hero.title': 'Ingeniero de Automatización de Pruebas',
+        'hero.tagline': 'Construyo soluciones confiables de testing automatizado con Playwright y Python, y exploro IA agéntica para hacer el QA más inteligente. 4 años transformando el caos manual en automatización limpia y escalable.',
+        'hero.cv': 'Descargar CV',
+        // About
+        'about.title': 'Sobre <span>mí</span>',
+        'about.subtitle': 'De los tribunales a las suites de pruebas — un camino no lineal hacia la tecnología.',
+        'about.p1': 'Empecé mi carrera en <strong>Derecho</strong>, pero en <span class="accent">2022</span> di el salto a IT. Aprendí <strong>JavaScript</strong> de forma autodidacta a través de Argentina Programa y completé un programa de desarrollo full-stack en <strong>Coderhouse</strong>.',
+        'about.p2': 'Entré a <strong>Accenture</strong> a través de un bootcamp de testing, y ahí encontré mi enfoque. Hoy me especializo en <strong>Playwright + Python</strong> e <strong>IA agéntica</strong> — lideré la migración de Tosca a Playwright en Banco Patagonia y automaticé de forma independiente un canal bancario completo desde cero.',
+        'about.p3': 'Me apasiona descubrir cómo los <span class="accent">modelos de lenguaje</span> y el <span class="accent">Model Context Protocol</span> pueden transformar los flujos de QA, y construyo mis propias herramientas con IA para llevar esas ideas a la práctica.',
+        // Skills
+        'skills.title': 'Habilidades y <span>Herramientas</span>',
+        'skills.subtitle': 'El stack que uso para diseñar, automatizar y entregar calidad.',
+        'skills.testing': 'Testing y Automatización',
+        'skills.development': 'Desarrollo',
+        'skills.ai': 'IA y Otros',
+        'skills.english': 'Inglés C1',
+        // Experience
+        'exp.title': 'Trayectoria <span>profesional</span>',
+        'exp.subtitle': 'El camino recorrido.',
+        'exp.acc.period': 'Ago 2023 – Presente',
+        'exp.acc.role': 'Ingeniero de Automatización de Pruebas',
+        'exp.acc.desc': 'Lideré la migración de Tosca a Playwright (Python) en Banco Patagonia e incorporé IA agéntica y MCP en los flujos de automatización. Automaticé de forma independiente un canal bancario completo desde cero.',
+        'exp.dt.period': 'Feb 2023 – Ago 2023',
+        'exp.dt.role': 'Desarrollador Full-Stack',
+        'exp.dt.desc': 'Trabajé en proyectos de desarrollo web creando funcionalidades con JavaScript, React y Node.js mientras afianzaba mis fundamentos de ingeniería.',
+        'exp.law.role': 'Trayectoria en Derecho',
+        'exp.law.desc': 'Comencé mi carrera profesional en Derecho antes de pasar a IT en 2022 — aportando rigor analítico y atención al detalle a la tecnología.',
+        // Projects
+        'proj.title': 'Proyectos <span>destacados</span>',
+        'proj.subtitle': 'Proyectos personales donde aprendo construyendo.',
+        'proj.view': 'Ver proyecto',
+        'proj.chatxp': 'Una aplicación de chat en tiempo real con autenticación y mensajería en vivo, construida con React y Firebase.',
+        'proj.typing': 'Un juego interactivo de velocidad de tipeo que mide palabras por minuto y precisión, construido con React.',
+        'proj.delight': 'Una tienda e-commerce completa con carrito, catálogo de productos y flujo de checkout, construida con React.',
+        'proj.lotus': 'Una experiencia e-commerce en JavaScript puro con renderizado dinámico de productos y lógica de carrito.',
+        'proj.kurt': 'Una landing page responsive de restaurante creada con HTML & CSS puro y una identidad visual fuerte.',
+        // AI Tools
+        'ai.title': 'Herramientas de <span>IA</span>',
+        'ai.subtitle': 'Herramientas personales que construí con la API de Claude para agilizar el trabajo diario.',
+        'ai.prompt': 'Un asistente que reescribe y refina prompts para mejorar claridad, estructura y resultados del LLM — convirtiendo ideas en bruto en instrucciones precisas y de alta calidad.',
+        'ai.excel': 'Una herramienta agéntica que lee, interpreta y responde preguntas sobre datos de planillas en lenguaje natural — automatizando búsquedas y resúmenes tediosos.',
+        // Contact
+        'contact.title': '<span>Conectemos</span>',
+        'contact.subtitle': 'Abierto a oportunidades y colaboraciones en automatización de pruebas e IA.',
+        // Footer
+        'footer.text': 'Hecho por Felipe Pouysségur',
+        // Chat
+        'chat.header': 'Preguntá sobre Felipe',
+        'chat.powered': 'Con tecnología de Claude',
+        'chat.welcome': '¡Hola! 👋 Soy el asistente del portfolio de Felipe. Preguntame lo que quieras sobre su experiencia, habilidades o proyectos.',
+        'chat.s1': '¿A qué se dedica Felipe?',
+        'chat.s2': 'Contame sobre su trabajo con Playwright',
+        'chat.s3': '¿Qué herramientas de IA construyó?',
+        'chat.placeholder': 'Escribí tu pregunta...',
+        'chat.error': '⚠️ Algo salió mal al contactar al asistente. Intentá de nuevo en un momento.'
+      }
+    };
+
+    /* Current language — restored from localStorage or guessed from browser */
+    let currentLang = localStorage.getItem('lang')
+      || (navigator.language && navigator.language.toLowerCase().startsWith('es') ? 'es' : 'en');
+
+    /* Translate helper */
+    function t(key) {
+      return (translations[currentLang] && translations[currentLang][key]) || key;
+    }
+
+    /* Swap all translatable strings on the page (no animation) */
+    function swapStrings() {
+      // Plain-text nodes
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        el.textContent = t(el.getAttribute('data-i18n'));
+      });
+      // Rich nodes (contain inline <span>/<strong>)
+      document.querySelectorAll('[data-i18n-html]').forEach((el) => {
+        el.innerHTML = t(el.getAttribute('data-i18n-html'));
+      });
+      // Input placeholders
+      document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+        el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+      });
+
+      // CV link: point to the matching PDF + filename
+      const cvLink = document.getElementById('cvLink');
+      if (cvLink) {
+        cvLink.href = currentLang === 'es' ? 'cv-es.pdf' : 'cv-en.pdf';
+        cvLink.setAttribute('download', 'CV_Felipe_Pouyssegur_' + (currentLang === 'es' ? 'ES' : 'EN') + '.pdf');
+      }
+
+      // Highlight the active language button
+      document.querySelectorAll('.lang-switch button').forEach((btn) => {
+        btn.classList.toggle('active', btn.getAttribute('data-lang') === currentLang);
+      });
+    }
+
+    /* Apply a language across the whole page, optionally with a fade animation */
+    function applyLang(lang, animate) {
+      const next = translations[lang] ? lang : 'en';
+      // Ignore re-clicking the active language
+      if (animate && next === currentLang) return;
+
+      currentLang = next;
+      localStorage.setItem('lang', currentLang);
+      document.documentElement.lang = currentLang;
+
+      if (animate) {
+        // Fade + blur out, swap text mid-animation, then fade back in
+        document.body.classList.add('lang-switching');
+        setTimeout(() => {
+          swapStrings();
+          // next frame: remove the class so everything eases back in
+          requestAnimationFrame(() => document.body.classList.remove('lang-switching'));
+        }, 160);
+      } else {
+        swapStrings();
+      }
+    }
+
+    /* Wire up the language switcher */
+    document.querySelectorAll('.lang-switch button').forEach((btn) => {
+      btn.addEventListener('click', () => applyLang(btn.getAttribute('data-lang'), true));
+    });
+
+    /* Apply the initial language on load (no animation) */
+    applyLang(currentLang, false);
+
+    /* ==================================================================
+       THEME TOGGLE (light / dark)
+       The initial theme is set in <head> before paint. Here we just wire
+       the button to flip it, persist the choice, and refresh the two
+       JS-driven visuals (scroll gradient + hero particles).
+       ================================================================== */
+    (function themeToggle() {
+      const btn = document.getElementById('themeToggle');
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+        if (window.refreshHeroAccent) window.refreshHeroAccent();
+        if (window.refreshScrollBg) window.refreshScrollBg();
+      });
+    })();
+
+    /* ==================================================================
+       SCROLL SECTION INDICATOR (scroll-spy)
+       Highlights the dot for whichever section is currently in view.
+       ================================================================== */
+    const spyDots = document.querySelectorAll('.scroll-spy .spy-dot');
+    const spySections = Array.from(spyDots)
+      .map((dot) => document.getElementById(dot.getAttribute('data-section')))
+      .filter(Boolean);
+
+    const spyObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          spyDots.forEach((dot) => {
+            dot.classList.toggle('active', dot.getAttribute('data-section') === entry.target.id);
+          });
+        }
+      });
+    }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
+
+    spySections.forEach((sec) => spyObserver.observe(sec));
+
+    /* ==================================================================
+       HERO PARTICLE NETWORK
+       A subtle, slowly drifting constellation of dots that connect with
+       thin lines when they get close — and gently react to the cursor.
+       Respects prefers-reduced-motion and pauses when off-screen.
+       ================================================================== */
+    (function heroNetwork() {
+      const canvas = document.getElementById('heroCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      // Honor users who prefer reduced motion: draw a static frame, no loop.
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      let width, height, particles, animationId;
+      const mouse = { x: null, y: null };
+      const DENSITY = 11000;   // higher = fewer particles (1 per N px²)
+      const MAX_DIST = 140;    // px distance to draw a connecting line
+      // Pull the accent straight from the active theme so it adapts on toggle
+      const accentRGB = () =>
+        getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '21, 163, 146';
+      let ACCENT = accentRGB();
+      window.refreshHeroAccent = () => { ACCENT = accentRGB(); };
+
+      // Build the particle set, scaled to the hero size + screen density
+      function init() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = rect.width;
+        height = rect.height;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const count = Math.min(90, Math.floor((width * height) / DENSITY));
+        particles = [];
+        for (let i = 0; i < count; i++) {
+          particles.push({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            vx: (Math.random() - 0.5) * 0.35,  // slow drift
+            vy: (Math.random() - 0.5) * 0.35,
+            r: Math.random() * 1.6 + 1.0
+          });
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+
+          // Move
+          p.x += p.vx;
+          p.y += p.vy;
+
+          // Bounce softly off the edges
+          if (p.x < 0 || p.x > width) p.vx *= -1;
+          if (p.y < 0 || p.y > height) p.vy *= -1;
+
+          // Gentle pull toward the cursor for a little life
+          if (mouse.x !== null) {
+            const dx = mouse.x - p.x;
+            const dy = mouse.y - p.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < 160 && dist > 0) {
+              p.x += (dx / dist) * 0.25;
+              p.y += (dy / dist) * 0.25;
+            }
+          }
+
+          // Draw the dot
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(' + ACCENT + ', 0.45)';
+          ctx.fill();
+
+          // Connect to nearby particles
+          for (let j = i + 1; j < particles.length; j++) {
+            const q = particles[j];
+            const d = Math.hypot(p.x - q.x, p.y - q.y);
+            if (d < MAX_DIST) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(q.x, q.y);
+              ctx.strokeStyle = 'rgba(' + ACCENT + ',' + (0.1 * (1 - d / MAX_DIST)) + ')';
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          }
+        }
+        animationId = requestAnimationFrame(draw);
+      }
+
+      // Track the cursor relative to the canvas
+      canvas.parentElement.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+      });
+      canvas.parentElement.addEventListener('mouseleave', () => { mouse.x = mouse.y = null; });
+
+      // Pause the loop when the hero scrolls out of view (saves CPU/battery)
+      const heroObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (reduceMotion) return;
+          if (entry.isIntersecting) {
+            if (!animationId) animationId = requestAnimationFrame(draw);
+          } else if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+          }
+        });
+      }, { threshold: 0 });
+      heroObserver.observe(canvas);
+
+      // Rebuild on resize
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => { init(); if (reduceMotion) draw(); }, 200);
+      });
+
+      // Kick things off
+      init();
+      if (reduceMotion) {
+        // single static frame, no animation loop
+        draw();
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+    })();
+
+    /* ------------------------------------------------------------------
+       CHAT BACKEND
+       The chat talks to our own serverless function at /api/chat, which
+       holds the Anthropic API key securely on the server. The key is
+       NEVER exposed in the browser.
+       See: /api/chat.js  (set ANTHROPIC_API_KEY in Vercel env vars)
+       ------------------------------------------------------------------ */
+    const CHAT_ENDPOINT = '/api/chat';
+
+    /* ----- Footer year ----- */
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    /* ----- Scroll reveal animation ----- */
+    const revealEls = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach((el) => revealObserver.observe(el));
+
+    /* ==================================================================
+       CHAT WIDGET LOGIC
+       ================================================================== */
+    const chatFab        = document.getElementById('chatFab');
+    const chatPanel      = document.getElementById('chatPanel');
+    const chatClose      = document.getElementById('chatClose');
+    const chatForm       = document.getElementById('chatForm');
+    const chatInput      = document.getElementById('chatInput');
+    const chatSend       = document.getElementById('chatSend');
+    const chatMessages   = document.getElementById('chatMessages');
+    const chatSuggestions = document.getElementById('chatSuggestions');
+
+    /* Conversation history sent to the API (excludes the system prompt) */
+    let conversation = [];
+
+    /* ----- Open / close the panel ----- */
+    function toggleChat(open) {
+      const isOpen = open !== undefined ? open : !chatPanel.classList.contains('open');
+      chatPanel.classList.toggle('open', isOpen);
+      if (isOpen) setTimeout(() => chatInput.focus(), 200);
+    }
+    chatFab.addEventListener('click', () => toggleChat());
+    chatClose.addEventListener('click', () => toggleChat(false));
+
+    /* ----- Append a message bubble to the UI ----- */
+    function addMessage(text, role) {
+      const el = document.createElement('div');
+      el.className = 'msg ' + role;
+      el.textContent = text;
+      chatMessages.appendChild(el);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return el;
+    }
+
+    /* ----- Show the typing indicator (returns the element so we can remove it) ----- */
+    function showTyping() {
+      const el = document.createElement('div');
+      el.className = 'msg bot typing';
+      el.innerHTML = '<span></span><span></span><span></span>';
+      chatMessages.appendChild(el);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return el;
+    }
+
+    /* ----- Call our secure serverless endpoint (which proxies to Claude) ----- */
+    async function askClaude(userText) {
+      // Add the user's turn to history
+      conversation.push({ role: 'user', content: userText });
+
+      const response = await fetch(CHAT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: conversation })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error('Request failed ' + response.status + ': ' + errText);
+      }
+
+      const data = await response.json();
+      const reply = data.reply || "Sorry, I couldn't generate a response.";
+
+      // Add the assistant's turn to history
+      conversation.push({ role: 'assistant', content: reply });
+      return reply;
+    }
+
+    /* ----- Handle a submitted question ----- */
+    async function handleSend(text) {
+      const message = text.trim();
+      if (!message) return;
+
+      // Hide suggestion chips after the first message
+      chatSuggestions.style.display = 'none';
+
+      addMessage(message, 'user');
+      chatInput.value = '';
+      chatInput.disabled = true;
+      chatSend.disabled = true;
+
+      const typingEl = showTyping();
+
+      try {
+        const reply = await askClaude(message);
+        typingEl.remove();
+        addMessage(reply, 'bot');
+      } catch (err) {
+        typingEl.remove();
+        console.error(err);
+        addMessage(t('chat.error'), 'error');
+      } finally {
+        chatInput.disabled = false;
+        chatSend.disabled = false;
+        chatInput.focus();
+      }
+    }
+
+    /* ----- Form submit ----- */
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handleSend(chatInput.value);
+    });
+
+    /* ----- Suggestion chips ----- */
+    chatSuggestions.querySelectorAll('button').forEach((btn) => {
+      btn.addEventListener('click', () => handleSend(btn.textContent));
+    });
+
+    /* ==================================================================
+       SCROLL-LINKED BACKGROUND
+       The page background lightens very subtly as you scroll down.
+       ================================================================== */
+    (function scrollBackground() {
+      // Gradient endpoints per theme: [topStart, topEnd, botStart, botEnd].
+      // As you scroll, each end eases from *Start toward *End (a subtle lift).
+      const THEMES = {
+        dark: {
+          TOP_START: [13, 17, 23],  TOP_END: [22, 32, 44],
+          BOT_START: [22, 32, 44],  BOT_END: [33, 46, 64]
+        },
+        light: {
+          TOP_START: [231, 234, 239], TOP_END: [222, 226, 232],
+          BOT_START: [218, 224, 231], BOT_END: [206, 213, 222]
+        }
+      };
+
+      const lerp = (a, b, t) => a.map((from, i) => Math.round(from + (b[i] - from) * t));
+      const rgb = (c) => 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
+
+      function update() {
+        const set = THEMES[document.documentElement.getAttribute('data-theme')] || THEMES.dark;
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = max > 0 ? Math.min(window.scrollY / max, 1) : 0;
+        const top = rgb(lerp(set.TOP_START, set.TOP_END, progress));
+        const bot = rgb(lerp(set.BOT_START, set.BOT_END, progress));
+        document.body.style.background =
+          'linear-gradient(160deg, ' + top + ' 0%, ' + bot + ' 100%)';
+        document.body.style.backgroundAttachment = 'fixed';
+      }
+      window.refreshScrollBg = update;
+
+      // Throttle scroll updates with requestAnimationFrame
+      let ticking = false;
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(() => { update(); ticking = false; });
+        }
+      }, { passive: true });
+
+      update();
+    })();
+  </script>
+</body>
+</html>
