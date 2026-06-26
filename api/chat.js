@@ -62,7 +62,7 @@ export default async function handler(req, res) {
     // Reply in the language of the active site version (ES / EN).
     const lang = body && body.lang === 'es' ? 'es' : 'en';
     const languageLine = lang === 'es'
-      ? 'IMPORTANT: Reply in Spanish, using natural Argentine Spanish (voseo) — professional and friendly.'
+      ? 'IMPORTANT: Reply in Argentine Spanish. Use voseo ("vos", "tenés", "podés") and say "acá" instead of "aquí". Keep a professional but warm and approachable tone — like a polished professional talking to a recruiter or client. Do NOT use slang or casual fillers such as "che", "boludo", "dale", "posta" or similar; never sound like a bot, but never sound overly informal either.'
       : 'IMPORTANT: Reply in English.';
     const systemContent = SYSTEM_PROMPT + '\n\n' + languageLine;
 
