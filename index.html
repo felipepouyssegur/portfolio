@@ -212,8 +212,28 @@
       z-index: 60;
       display: flex;
       flex-direction: column;
+      align-items: center;
       gap: 28px;
-      align-items: flex-end;
+      padding: 14px 8px;             /* extra background around the dots */
+      border-radius: 999px;          /* rounded top & bottom */
+      background: var(--nav-bg);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(8px);
+    }
+    /* Travelling indicator: an accent circle that slides between dots */
+    .spy-thumb {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.22);
+      transform: translate(-50%, 0);
+      transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      z-index: 1;
     }
     .spy-dot {
       position: relative;
@@ -224,12 +244,8 @@
       transition: background 0.25s, transform 0.25s;
       display: block;
     }
-    .spy-dot:hover { background: var(--accent-2); transform: scale(1.25); }
-    .spy-dot.active {
-      background: var(--accent);
-      transform: scale(1.35);
-      box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.22);
-    }
+    .spy-dot:hover { background: var(--accent-2); transform: scale(1.2); }
+    .spy-dot.active { background: var(--accent); }
     /* hover label */
     .spy-label {
       position: absolute;
@@ -773,6 +789,7 @@
        Dots that highlight the section currently in view.
        ============================================================ -->
   <nav class="scroll-spy" aria-label="Section navigation">
+    <span class="spy-thumb" aria-hidden="true"></span>
     <a href="#home"      class="spy-dot" data-section="home"><span class="spy-label" data-i18n="nav.home">Home</span></a>
     <a href="#about"     class="spy-dot" data-section="about"><span class="spy-label" data-i18n="nav.about">About</span></a>
     <a href="#skills"    class="spy-dot" data-section="skills"><span class="spy-label" data-i18n="nav.skills">Skills</span></a>
@@ -1308,22 +1325,62 @@
        SCROLL SECTION INDICATOR (scroll-spy)
        Highlights the dot for whichever section is currently in view.
        ================================================================== */
-    const spyDots = document.querySelectorAll('.scroll-spy .spy-dot');
+    const scrollSpy = document.querySelector('.scroll-spy');
+    const spyThumb  = document.querySelector('.spy-thumb');
+    const spyDots   = document.querySelectorAll('.scroll-spy .spy-dot');
     const spySections = Array.from(spyDots)
       .map((dot) => document.getElementById(dot.getAttribute('data-section')))
       .filter(Boolean);
 
+    /* Slide the travelling circle so its center lines up with a dot */
+    function moveThumbTo(dot) {
+      if (!dot || !spyThumb) return;
+      const y = dot.offsetTop + dot.offsetHeight / 2
+              - spyThumb.offsetHeight / 2 - scrollSpy.clientTop;
+      spyThumb.style.transform = 'translate(-50%, ' + y + 'px)';
+    }
+
+    /* Mark a section active and move the indicator to it */
+    function setActiveSpy(sectionId) {
+      let activeDot = null;
+      spyDots.forEach((dot) => {
+        const on = dot.getAttribute('data-section') === sectionId;
+        dot.classList.toggle('active', on);
+        if (on) activeDot = dot;
+      });
+      moveThumbTo(activeDot);
+    }
+
     const spyObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          spyDots.forEach((dot) => {
-            dot.classList.toggle('active', dot.getAttribute('data-section') === entry.target.id);
-          });
-        }
+        if (entry.isIntersecting) setActiveSpy(entry.target.id);
       });
     }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
 
     spySections.forEach((sec) => spyObserver.observe(sec));
+
+    /* Clicking a dot smooth-scrolls and centers the section in the viewport */
+    spyDots.forEach((dot) => {
+      dot.addEventListener('click', (e) => {
+        e.preventDefault();
+        const sec = document.getElementById(dot.getAttribute('data-section'));
+        if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+
+    /* Place the indicator on load (no animation flash) and keep it aligned on resize */
+    function placeThumbInstant() {
+      const active = document.querySelector('.spy-dot.active') || spyDots[0];
+      const prev = spyThumb.style.transition;
+      spyThumb.style.transition = 'none';
+      moveThumbTo(active);
+      requestAnimationFrame(() => { spyThumb.style.transition = prev; });
+    }
+    window.addEventListener('load', placeThumbInstant);
+    placeThumbInstant();
+    window.addEventListener('resize', () => {
+      moveThumbTo(document.querySelector('.spy-dot.active') || spyDots[0]);
+    });
 
     /* ==================================================================
        HERO PARTICLE NETWORK
