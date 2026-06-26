@@ -1,20 +1,20 @@
 // ============================================================
 //  Vercel Serverless Function — /api/chat
-//  Securely proxies chat requests to the Google Gemini API.
+//  Securely proxies chat requests to the Groq API (OpenAI-compatible).
 //  The API key lives ONLY on the server (environment variable),
 //  so it is never exposed in the browser.
 //
 //  Setup:
-//    1. Get a free key at https://aistudio.google.com/app/apikey
+//    1. Get a free key (no credit card) at https://console.groq.com/keys
 //    2. In your Vercel project → Settings → Environment Variables,
-//       add:  GEMINI_API_KEY = AIza...
+//       add:  GROQ_API_KEY = gsk_...
 //    3. Redeploy. That's it.
 //
-//  Local dev:  create a .env file with GEMINI_API_KEY=... and
+//  Local dev:  create a .env file with GROQ_API_KEY=... and
 //              run `vercel dev`.
 // ============================================================
 
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
 // System prompt that defines the assistant's knowledge and behavior.
 const SYSTEM_PROMPT = `You are Felipe Pouysségur's portfolio assistant. Answer questions about Felipe concisely and professionally. Here is everything you need to know about him:
@@ -38,10 +38,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     return res.status(500).json({
-      error: 'Server is not configured. Missing GEMINI_API_KEY environment variable.'
+      error: 'Server is not configured. Missing GROQ_API_KEY environment variable.'
     });
   }
 
@@ -55,42 +55,40 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid request: "messages" array is required.' });
     }
 
-    // Map our {role, content} history to Gemini's format.
-    // Gemini uses the role "model" for assistant turns.
-    const contents = messages.map((m) => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: String(m.content || '') }]
-    }));
+    // Groq uses the OpenAI chat format: a system message followed by the
+    // user/assistant turns (which already match our {role, content} shape).
+    const chatMessages = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...messages.map((m) => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: String(m.content || '')
+      }))
+    ];
 
-    const endpoint =
-      'https://generativelanguage.googleapis.com/v1beta/models/' +
-      GEMINI_MODEL + ':generateContent?key=' + encodeURIComponent(apiKey);
-
-    const geminiRes = await fetch(endpoint, {
+    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey
+      },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: contents,
-        generationConfig: { maxOutputTokens: 600, temperature: 0.7 }
+        model: GROQ_MODEL,
+        messages: chatMessages,
+        max_tokens: 600,
+        temperature: 0.7
       })
     });
 
-    if (!geminiRes.ok) {
-      const errText = await geminiRes.text();
-      console.error('Gemini API error:', geminiRes.status, errText);
+    if (!groqRes.ok) {
+      const errText = await groqRes.text();
+      console.error('Groq API error:', groqRes.status, errText);
       return res.status(502).json({ error: 'Upstream API error.' });
     }
 
-    const data = await geminiRes.json();
+    const data = await groqRes.json();
     const reply =
-      (data.candidates &&
-        data.candidates[0] &&
-        data.candidates[0].content &&
-        data.candidates[0].content.parts &&
-        data.candidates[0].content.parts[0] &&
-        data.candidates[0].content.parts[0].text)
-        ? data.candidates[0].content.parts[0].text
+      (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content)
+        ? data.choices[0].message.content
         : "Sorry, I couldn't generate a response.";
 
     return res.status(200).json({ reply });
