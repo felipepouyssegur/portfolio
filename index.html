@@ -537,7 +537,7 @@
     .chat-fab {
       position: fixed;
       bottom: 24px;
-      right: 24px;
+      left: 24px;
       width: 60px;
       height: 60px;
       border-radius: 50%;
@@ -558,7 +558,7 @@
     .chat-panel {
       position: fixed;
       bottom: 96px;
-      right: 24px;
+      left: 24px;
       width: 370px;
       max-width: calc(100vw - 32px);
       height: 520px;
@@ -791,8 +791,8 @@
       <h1>Felipe Pouysségur</h1>
       <h2 data-i18n="hero.title">Test Automation Engineer</h2>
       <p class="tagline" data-i18n="hero.tagline">
-        I build reliable automated testing solutions with Playwright &amp; Python,
-        and explore agentic AI to make QA smarter. 4 years turning manual chaos into clean, scalable automation.
+        I build reliable automated testing solutions and explore agentic AI to make QA smarter.
+        4 years turning manual chaos into clean, scalable automation.
       </p>
       <div class="hero-actions">
         <!-- CV download (href + filename switch with language) -->
@@ -820,18 +820,18 @@
   <section id="about">
     <div class="container reveal">
       <h2 class="section-title" data-i18n-html="about.title">About <span>me</span></h2>
-      <p class="section-subtitle" data-i18n="about.subtitle">From courtrooms to test suites — a non-linear path into tech.</p>
+      <p class="section-subtitle" data-i18n="about.subtitle">Test automation, agentic AI, and a focus on shipping quality.</p>
       <div class="about-grid">
         <p data-i18n-html="about.p1">
-          I started my career in <strong>Law</strong>, but in <span class="accent">2022</span> I made the leap
-          into IT. I taught myself <strong>JavaScript</strong> through Argentina Programa and completed a
-          full-stack development program at <strong>Coderhouse</strong>.
+          In <span class="accent">2022</span> I moved into IT through a <strong>full-stack development</strong>
+          career, teaching myself <strong>JavaScript</strong> and <strong>React</strong> and building real
+          projects along the way.
         </p>
         <p data-i18n-html="about.p2">
-          I joined <strong>Accenture</strong> through a testing bootcamp, and that's where I found my focus.
-          Today I specialize in <strong>Playwright + Python</strong> and <strong>agentic AI</strong> — I led the
-          migration from Tosca to Playwright at Banco Patagonia and independently automated a complete banking
-          channel from scratch.
+          I joined <strong>Accenture</strong> through a <strong>manual testing</strong> bootcamp, and that's where
+          I found my focus. Today I specialize in <strong>test automation</strong> and <strong>agentic AI</strong>
+          — I led the migration to Playwright at <strong>Banco Patagonia</strong> and independently automated a
+          complete banking channel from scratch.
         </p>
         <p data-i18n-html="about.p3">
           I'm endlessly curious about how <span class="accent">large language models</span> and the
@@ -1048,20 +1048,20 @@
     <div class="chat-header">
       <div class="avatar">FP</div>
       <div class="info">
-        <h4 data-i18n="chat.header">Ask about Felipe</h4>
+        <h4 data-i18n="chat.header">Chat with Felipe</h4>
         <span data-i18n="chat.powered">Powered by Groq</span>
       </div>
       <button class="close-btn" id="chatClose" aria-label="Close chat">&times;</button>
     </div>
 
     <div class="chat-messages" id="chatMessages">
-      <div class="msg bot" data-i18n="chat.welcome">Hi! 👋 I'm Felipe's portfolio assistant. Ask me anything about his experience, skills or projects.</div>
+      <div class="msg bot" data-i18n="chat.welcome">Hi! 👋 I'm Felipe. Ask me anything about my experience, skills or projects.</div>
     </div>
 
     <div class="chat-suggestions" id="chatSuggestions">
-      <button data-i18n="chat.s1">What does Felipe do?</button>
-      <button data-i18n="chat.s2">Tell me about his Playwright work</button>
-      <button data-i18n="chat.s3">What AI tools has he built?</button>
+      <button data-i18n="chat.s1">What do you do?</button>
+      <button data-i18n="chat.s2">Tell me about your automation work</button>
+      <button data-i18n="chat.s3">What AI tools have you built?</button>
     </div>
 
     <form class="chat-input" id="chatForm">
@@ -1094,13 +1094,13 @@
         // Hero
         'hero.location': 'Mar del Plata, Argentina',
         'hero.title': 'Test Automation Engineer',
-        'hero.tagline': 'I build reliable automated testing solutions with Playwright & Python, and explore agentic AI to make QA smarter. 4 years turning manual chaos into clean, scalable automation.',
+        'hero.tagline': 'I build reliable automated testing solutions and explore agentic AI to make QA smarter. 4 years turning manual chaos into clean, scalable automation.',
         'hero.cv': 'Download CV',
         // About
         'about.title': 'About <span>me</span>',
-        'about.subtitle': 'From courtrooms to test suites — a non-linear path into tech.',
-        'about.p1': 'I started my career in <strong>Law</strong>, but in <span class="accent">2022</span> I made the leap into IT. I taught myself <strong>JavaScript</strong> through Argentina Programa and completed a full-stack development program at <strong>Coderhouse</strong>.',
-        'about.p2': 'I joined <strong>Accenture</strong> through a testing bootcamp, and that\'s where I found my focus. Today I specialize in <strong>Playwright + Python</strong> and <strong>agentic AI</strong> — I led the migration from Tosca to Playwright at Banco Patagonia and independently automated a complete banking channel from scratch.',
+        'about.subtitle': 'Test automation, agentic AI, and a focus on shipping quality.',
+        'about.p1': 'In <span class="accent">2022</span> I moved into IT through a <strong>full-stack development</strong> career, teaching myself <strong>JavaScript</strong> and <strong>React</strong> and building real projects along the way.',
+        'about.p2': 'I joined <strong>Accenture</strong> through a <strong>manual testing</strong> bootcamp, and that\'s where I found my focus. Today I specialize in <strong>test automation</strong> and <strong>agentic AI</strong> — I led the migration to Playwright at <strong>Banco Patagonia</strong> and independently automated a complete banking channel from scratch.',
         'about.p3': 'I\'m endlessly curious about how <span class="accent">large language models</span> and the <span class="accent">Model Context Protocol</span> can reshape QA workflows, and I build my own AI-powered tools to put those ideas into practice.',
         // Skills
         'skills.title': 'Skills &amp; <span>Tools</span>',
@@ -1140,12 +1140,12 @@
         // Footer
         'footer.text': 'Built by Felipe Pouysségur',
         // Chat
-        'chat.header': 'Ask about Felipe',
+        'chat.header': 'Chat with Felipe',
         'chat.powered': 'Powered by Groq',
-        'chat.welcome': "Hi! 👋 I'm Felipe's portfolio assistant. Ask me anything about his experience, skills or projects.",
-        'chat.s1': 'What does Felipe do?',
-        'chat.s2': 'Tell me about his Playwright work',
-        'chat.s3': 'What AI tools has he built?',
+        'chat.welcome': "Hi! 👋 I'm Felipe. Ask me anything about my experience, skills or projects.",
+        'chat.s1': 'What do you do?',
+        'chat.s2': 'Tell me about your automation work',
+        'chat.s3': 'What AI tools have you built?',
         'chat.placeholder': 'Type your question...',
         'chat.error': '⚠️ Something went wrong while contacting the assistant. Please try again in a moment.'
       },
@@ -1161,13 +1161,13 @@
         // Hero
         'hero.location': 'Mar del Plata, Argentina',
         'hero.title': 'Ingeniero de Automatización de Pruebas',
-        'hero.tagline': 'Construyo soluciones confiables de testing automatizado con Playwright y Python, y exploro IA agéntica para hacer el QA más inteligente. 4 años transformando el caos manual en automatización limpia y escalable.',
+        'hero.tagline': 'Construyo soluciones confiables de testing automatizado y exploro IA agéntica para hacer el QA más inteligente. 4 años transformando el caos manual en automatización limpia y escalable.',
         'hero.cv': 'Descargar CV',
         // About
         'about.title': 'Sobre <span>mí</span>',
-        'about.subtitle': 'De los tribunales a las suites de pruebas — un camino no lineal hacia la tecnología.',
-        'about.p1': 'Empecé mi carrera en <strong>Derecho</strong>, pero en <span class="accent">2022</span> di el salto a IT. Aprendí <strong>JavaScript</strong> de forma autodidacta a través de Argentina Programa y completé un programa de desarrollo full-stack en <strong>Coderhouse</strong>.',
-        'about.p2': 'Entré a <strong>Accenture</strong> a través de un bootcamp de testing, y ahí encontré mi enfoque. Hoy me especializo en <strong>Playwright + Python</strong> e <strong>IA agéntica</strong> — lideré la migración de Tosca a Playwright en Banco Patagonia y automaticé de forma independiente un canal bancario completo desde cero.',
+        'about.subtitle': 'Automatización de pruebas, IA agéntica y foco en entregar calidad.',
+        'about.p1': 'En <span class="accent">2022</span> di el salto a IT a través de una <strong>carrera de desarrollo full-stack</strong>, aprendiendo <strong>JavaScript</strong> y <strong>React</strong> de forma autodidacta y construyendo proyectos reales en el camino.',
+        'about.p2': 'Entré a <strong>Accenture</strong> a través de un bootcamp de <strong>testing manual</strong>, y ahí encontré mi enfoque. Hoy me especializo en <strong>automatización de pruebas</strong> e <strong>IA agéntica</strong> — lideré la migración a Playwright en <strong>Banco Patagonia</strong> y automaticé de forma independiente un canal bancario completo desde cero.',
         'about.p3': 'Me apasiona descubrir cómo los <span class="accent">modelos de lenguaje</span> y el <span class="accent">Model Context Protocol</span> pueden transformar los flujos de QA, y construyo mis propias herramientas con IA para llevar esas ideas a la práctica.',
         // Skills
         'skills.title': 'Habilidades y <span>Herramientas</span>',
@@ -1207,12 +1207,12 @@
         // Footer
         'footer.text': 'Hecho por Felipe Pouysségur',
         // Chat
-        'chat.header': 'Preguntá sobre Felipe',
+        'chat.header': 'Chateá con Felipe',
         'chat.powered': 'Con tecnología de Groq',
-        'chat.welcome': '¡Hola! 👋 Soy el asistente del portfolio de Felipe. Preguntame lo que quieras sobre su experiencia, habilidades o proyectos.',
-        'chat.s1': '¿A qué se dedica Felipe?',
-        'chat.s2': 'Contame sobre su trabajo con Playwright',
-        'chat.s3': '¿Qué herramientas de IA construyó?',
+        'chat.welcome': '¡Hola! 👋 Soy Felipe. Preguntame lo que quieras sobre mi experiencia, habilidades o proyectos.',
+        'chat.s1': '¿A qué te dedicás?',
+        'chat.s2': 'Contame sobre tu trabajo en automatización',
+        'chat.s3': '¿Qué herramientas de IA construiste?',
         'chat.placeholder': 'Escribí tu pregunta...',
         'chat.error': '⚠️ Algo salió mal al contactar al asistente. Intentá de nuevo en un momento.'
       }
@@ -1535,7 +1535,7 @@
       const response = await fetch(CHAT_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: conversation })
+        body: JSON.stringify({ messages: conversation, lang: currentLang })
       });
 
       if (!response.ok) {
