@@ -458,6 +458,22 @@
     @media (max-width: 860px) { .projects-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 560px) { .projects-grid { grid-template-columns: 1fr; } }
 
+    /* subtle "no AI" note above the project grid */
+    .proj-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: -32px 0 36px;
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--bg-soft);
+      color: var(--text-dim);
+      font-size: 0.82rem;
+      font-style: italic;
+    }
+    .proj-note svg { width: 15px; height: 15px; color: var(--accent-2); flex-shrink: 0; }
+
     .project-card {
       background: var(--bg-soft);
       border: 1px solid var(--border);
@@ -809,7 +825,7 @@
       <h2 data-i18n="hero.title">Test Automation Engineer</h2>
       <p class="tagline" data-i18n="hero.tagline">
         I build reliable automated testing solutions and explore agentic AI to make QA smarter.
-        4 years turning manual chaos into clean, scalable automation.
+        3 years turning manual chaos into clean, scalable automation.
       </p>
       <div class="hero-actions">
         <!-- CV download (href + filename switch with language) -->
@@ -1023,6 +1039,11 @@
     <div class="container reveal">
       <h2 class="section-title" data-i18n-html="proj.title">Featured <span>projects</span></h2>
       <p class="section-subtitle" data-i18n="proj.subtitle">Personal builds where I learn by shipping.</p>
+      <!-- Subtle note: these projects were hand-coded, no AI -->
+      <p class="proj-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+        <span data-i18n="proj.noai">Hand-coded from scratch — no AI was used to build these projects.</span>
+      </p>
       <div class="projects-grid">
 
         <!-- CHAT XP -->
@@ -1174,7 +1195,7 @@
         // Hero
         'hero.location': 'Mar del Plata, Argentina',
         'hero.title': 'Test Automation Engineer',
-        'hero.tagline': 'I build reliable automated testing solutions and explore agentic AI to make QA smarter. 4 years turning manual chaos into clean, scalable automation.',
+        'hero.tagline': 'I build reliable automated testing solutions and explore agentic AI to make QA smarter. 3 years turning manual chaos into clean, scalable automation.',
         'hero.cv': 'Download CV',
         // About
         'about.title': 'About <span>me</span>',
@@ -1206,6 +1227,7 @@
         // Projects
         'proj.title': 'Featured <span>projects</span>',
         'proj.subtitle': 'Personal builds where I learn by shipping.',
+        'proj.noai': 'Hand-coded from scratch — no AI was used to build these projects.',
         'proj.view': 'View project',
         'proj.chatxp': 'A real-time chat application with authentication and live messaging, built with React and Firebase.',
         'proj.typing': 'An interactive typing-speed game that measures words per minute and accuracy, built with React.',
@@ -1244,7 +1266,7 @@
         // Hero
         'hero.location': 'Mar del Plata, Argentina',
         'hero.title': 'Ingeniero de Automatización de Pruebas',
-        'hero.tagline': 'Construyo soluciones confiables de testing automatizado y exploro IA agéntica para hacer el QA más inteligente. 4 años transformando el caos manual en automatización limpia y escalable.',
+        'hero.tagline': 'Construyo soluciones confiables de testing automatizado y exploro IA agéntica para hacer el QA más inteligente. 3 años transformando el caos manual en automatización limpia y escalable.',
         'hero.cv': 'Descargar CV',
         // About
         'about.title': 'Sobre <span>mí</span>',
@@ -1276,6 +1298,7 @@
         // Projects
         'proj.title': 'Proyectos <span>destacados</span>',
         'proj.subtitle': 'Proyectos personales donde aprendo construyendo.',
+        'proj.noai': 'Programados a mano desde cero — no se usó IA para construir estos proyectos.',
         'proj.view': 'Ver proyecto',
         'proj.chatxp': 'Una aplicación de chat en tiempo real con autenticación y mensajería en vivo, construida con React y Firebase.',
         'proj.typing': 'Un juego interactivo de velocidad de tipeo que mide palabras por minuto y precisión, construido con React.',
