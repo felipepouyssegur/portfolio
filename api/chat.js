@@ -1,26 +1,27 @@
 // ============================================================
 //  Vercel Serverless Function — /api/chat
-//  Securely proxies chat requests to the Anthropic Messages API.
+//  Securely proxies chat requests to the Google Gemini API.
 //  The API key lives ONLY on the server (environment variable),
 //  so it is never exposed in the browser.
 //
 //  Setup:
-//    1. In your Vercel project → Settings → Environment Variables,
-//       add:  ANTHROPIC_API_KEY = sk-ant-...
-//    2. Redeploy. That's it.
+//    1. Get a free key at https://aistudio.google.com/app/apikey
+//    2. In your Vercel project → Settings → Environment Variables,
+//       add:  GEMINI_API_KEY = AIza...
+//    3. Redeploy. That's it.
 //
-//  Local dev:  create a .env file with ANTHROPIC_API_KEY=... and
+//  Local dev:  create a .env file with GEMINI_API_KEY=... and
 //              run `vercel dev`.
 // ============================================================
 
-const ANTHROPIC_MODEL = 'claude-sonnet-4-6';
+const GEMINI_MODEL = 'gemini-2.0-flash';
 
 // System prompt that defines the assistant's knowledge and behavior.
 const SYSTEM_PROMPT = `You are Felipe Pouysségur's portfolio assistant. Answer questions about Felipe concisely and professionally. Here is everything you need to know about him:
 
 Felipe is a Test Automation Engineer at Accenture with 4 years of IT experience, specialized in Tricentis Tosca and Playwright with Python. He has a background in full-stack development (JavaScript, React, Node.js). He is actively exploring agentic AI and large language models. English level C1.
 
-He led the migration from Tosca to Playwright with Python at Banco Patagonia, incorporating agentic AI and MCP into automation workflows. He independently automated a complete banking channel from scratch. He built personal AI-powered tools including a Prompt Improver and an Excel Reader Agent using the Claude API.
+He led the migration from Tosca to Playwright with Python at Banco Patagonia, incorporating agentic AI and MCP into automation workflows. He independently automated a complete banking channel from scratch. He built personal AI-powered tools including a Prompt Improver and an Excel Reader Agent.
 
 He started his career in Law, then switched to IT in 2022 — self-taught JavaScript via Argentina Programa, completed a full-stack development program at Coderhouse, and joined Accenture through a testing bootcamp.
 
@@ -37,10 +38,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return res.status(500).json({
-      error: 'Server is not configured. Missing ANTHROPIC_API_KEY environment variable.'
+      error: 'Server is not configured. Missing GEMINI_API_KEY environment variable.'
     });
   }
 
@@ -54,32 +55,43 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid request: "messages" array is required.' });
     }
 
-    // Forward the request to the Anthropic Messages API
-    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+    // Map our {role, content} history to Gemini's format.
+    // Gemini uses the role "model" for assistant turns.
+    const contents = messages.map((m) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: String(m.content || '') }]
+    }));
+
+    const endpoint =
+      'https://generativelanguage.googleapis.com/v1beta/models/' +
+      GEMINI_MODEL + ':generateContent?key=' + encodeURIComponent(apiKey);
+
+    const geminiRes = await fetch(endpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: ANTHROPIC_MODEL,
-        max_tokens: 600,
-        system: SYSTEM_PROMPT,
-        messages: messages
+        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: contents,
+        generationConfig: { maxOutputTokens: 600, temperature: 0.7 }
       })
     });
 
-    if (!anthropicRes.ok) {
-      const errText = await anthropicRes.text();
-      console.error('Anthropic API error:', anthropicRes.status, errText);
+    if (!geminiRes.ok) {
+      const errText = await geminiRes.text();
+      console.error('Gemini API error:', geminiRes.status, errText);
       return res.status(502).json({ error: 'Upstream API error.' });
     }
 
-    const data = await anthropicRes.json();
-    const reply = (data.content && data.content[0] && data.content[0].text)
-      ? data.content[0].text
-      : "Sorry, I couldn't generate a response.";
+    const data = await geminiRes.json();
+    const reply =
+      (data.candidates &&
+        data.candidates[0] &&
+        data.candidates[0].content &&
+        data.candidates[0].content.parts &&
+        data.candidates[0].content.parts[0] &&
+        data.candidates[0].content.parts[0].text)
+        ? data.candidates[0].content.parts[0].text
+        : "Sorry, I couldn't generate a response.";
 
     return res.status(200).json({ reply });
   } catch (err) {
