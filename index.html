@@ -222,6 +222,14 @@
       backdrop-filter: blur(8px);
     }
     /* Travelling indicator: an accent circle that slides between dots */
+    @keyframes spy-breathe {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.18); }
+      50%       { box-shadow: 0 0 0 7px rgba(var(--accent-rgb), 0.06), 0 0 16px rgba(var(--accent-rgb), 0.28); }
+    }
+    @keyframes spy-click-bloom {
+      0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.6; filter: blur(0px); }
+      100% { transform: translate(-50%, -50%) scale(4.5); opacity: 0;   filter: blur(6px); }
+    }
     .spy-thumb {
       position: absolute;
       top: 0;
@@ -230,11 +238,11 @@
       height: 11px;
       border-radius: 50%;
       background: var(--accent);
-      box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.22);
       transform: translate(-50%, 0);
       transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
       z-index: 1;
+      animation: spy-breathe 2.8s ease-in-out infinite;
     }
     .spy-dot {
       position: relative;
@@ -244,9 +252,20 @@
       background: var(--border);
       transition: background 0.25s, transform 0.25s;
       display: block;
+      overflow: visible;
     }
     .spy-dot:hover { background: var(--accent-2); }
     .spy-dot.active { background: var(--accent); }
+    .spy-dot.clicking::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 11px; height: 11px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      pointer-events: none;
+      animation: spy-click-bloom 0.55s ease-out forwards;
+    }
     /* hover label — subtle, softly blurred text (no box) */
     .spy-label {
       position: absolute;
@@ -1455,6 +1474,10 @@
     spyDots.forEach((dot) => {
       dot.addEventListener('click', (e) => {
         e.preventDefault();
+        dot.classList.remove('clicking');
+        void dot.offsetWidth; // force reflow so the animation restarts on rapid clicks
+        dot.classList.add('clicking');
+        setTimeout(() => dot.classList.remove('clicking'), 560);
         const sec = document.getElementById(dot.getAttribute('data-section'));
         if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
@@ -1475,9 +1498,9 @@
     });
 
     /* ==================================================================
-       HERO PARTICLE NETWORK
-       A subtle, slowly drifting constellation of dots that connect with
-       thin lines when they get close — and gently react to the cursor.
+       HERO CONSTELLATION NETWORK
+       Constellations materialize every few seconds with twinkling stars.
+       Occasionally the Claude mark appears and fades.
        Respects prefers-reduced-motion and pauses when off-screen.
        ================================================================== */
     (function heroNetwork() {
@@ -1485,99 +1508,222 @@
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
 
-      // Honor users who prefer reduced motion: draw a static frame, no loop.
       const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      let width, height, particles, animationId;
-      const mouse = { x: null, y: null };
-      const DENSITY = 11000;   // higher = fewer particles (1 per N px²)
-      const MAX_DIST = 140;    // px distance to draw a connecting line
-      // Pull the accent straight from the active theme so it adapts on toggle
-      const accentRGB = () =>
-        getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '21, 163, 146';
-      let ACCENT = accentRGB();
-      window.refreshHeroAccent = () => { ACCENT = accentRGB(); };
+      let width, height, animationId;
+      let frameCount = 0;
+      const constellations = [];
+      const claudeIcons = [];
+      let nextConstFrame = 0;
+      let nextClaudeFrame = 720; // first Claude icon after ~12 s
 
-      // Build the particle set, scaled to the hero size + screen density
+      // Shape templates: normalized pts (0..1) + edge index pairs
+      const TEMPLATES = [
+        { // Cassiopeia W
+          pts: [{x:0,y:.5},{x:.25,y:.1},{x:.5,y:.45},{x:.75,y:.1},{x:1,y:.5}],
+          edges: [[0,1],[1,2],[2,3],[3,4]]
+        },
+        { // Big Dipper bowl + handle
+          pts: [{x:0,y:0},{x:.4,y:0},{x:.45,y:.45},{x:.05,y:.5},{x:.55,y:.5},{x:.8,y:.3},{x:1,y:.1}],
+          edges: [[0,1],[1,2],[2,3],[3,0],[2,4],[4,5],[5,6]]
+        },
+        { // Triangle
+          pts: [{x:.5,y:0},{x:1,y:.9},{x:0,y:.9}],
+          edges: [[0,1],[1,2],[2,0]]
+        },
+        { // Diamond
+          pts: [{x:.5,y:0},{x:1,y:.5},{x:.5,y:1},{x:0,y:.5}],
+          edges: [[0,1],[1,2],[2,3],[3,0]]
+        },
+        { // Orion belt + surrounding stars
+          pts: [{x:.2,y:.1},{x:.5,y:.05},{x:.8,y:.1},{x:.15,y:.5},{x:.5,y:.5},{x:.85,y:.5},{x:.3,y:.95},{x:.7,y:.95}],
+          edges: [[0,1],[1,2],[0,3],[2,5],[3,4],[4,5],[4,6],[4,7]]
+        },
+        { // Lyra harp
+          pts: [{x:.5,y:0},{x:.15,y:.4},{x:.85,y:.4},{x:.05,y:.85},{x:.4,y:.95},{x:.6,y:.95},{x:.95,y:.85}],
+          edges: [[0,1],[0,2],[1,3],[1,4],[2,5],[2,6],[3,4],[4,5],[5,6]]
+        },
+        { // Scorpio arc
+          pts: [{x:0,y:.2},{x:.15,y:0},{x:.3,y:.2},{x:.45,y:.5},{x:.5,y:.75},{x:.6,y:.95},{x:.78,y:.85},{x:.92,y:.7},{x:1,y:.5}],
+          edges: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8]]
+        },
+        { // Cross
+          pts: [{x:.5,y:0},{x:.5,y:1},{x:0,y:.5},{x:1,y:.5},{x:.5,y:.5}],
+          edges: [[0,4],[1,4],[2,4],[3,4]]
+        },
+      ];
+
+      function accentRGB() {
+        return getComputedStyle(document.documentElement).getPropertyValue('--accent-rgb').trim() || '26,111,168';
+      }
+
+      function spawnConstellation() {
+        const tmpl = TEMPLATES[Math.floor(Math.random() * TEMPLATES.length)];
+        const scale = 65 + Math.random() * 95;
+        const margin = scale * 1.4;
+        const ox = margin + Math.random() * Math.max(10, width  - margin * 2);
+        const oy = margin + Math.random() * Math.max(10, height - margin * 2);
+        constellations.push({
+          stars: tmpl.pts.map(p => ({
+            x: ox + p.x * scale,
+            y: oy + p.y * scale,
+            r: 1.2 + Math.random() * 1.3,
+            phase: Math.random() * Math.PI * 2,
+            speed: 0.9 + Math.random() * 1.8,
+          })),
+          edges: tmpl.edges,
+          alpha: 0,
+          state: 'in',
+          tick: 0,
+          hold: 220 + Math.floor(Math.random() * 180),
+        });
+      }
+
+      function spawnClaude() {
+        claudeIcons.push({
+          x: 70 + Math.random() * (width  - 140),
+          y: 70 + Math.random() * (height - 140),
+          size: 20 + Math.random() * 14,
+          alpha: 0,
+          state: 'in',
+          tick: 0,
+          hold: 200 + Math.floor(Math.random() * 120),
+        });
+      }
+
+      function drawClaude(x, y, size, alpha) {
+        const rgb = accentRGB();
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(x, y);
+
+        // Soft ambient glow
+        const grd = ctx.createRadialGradient(0, 0, size * 0.1, 0, 0, size * 2);
+        grd.addColorStop(0, 'rgba(' + rgb + ',0.1)');
+        grd.addColorStop(1, 'rgba(' + rgb + ',0)');
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 2, 0, Math.PI * 2);
+        ctx.fillStyle = grd;
+        ctx.fill();
+
+        // Outer ring
+        ctx.beginPath();
+        ctx.arc(0, 0, size, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(' + rgb + ',0.3)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // 6-spoke asterisk (Anthropic mark style)
+        ctx.strokeStyle = 'rgba(' + rgb + ',0.75)';
+        ctx.lineWidth = 1.8;
+        ctx.lineCap = 'round';
+        for (let i = 0; i < 6; i++) {
+          const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(a) * size * 0.22, Math.sin(a) * size * 0.22);
+          ctx.lineTo(Math.cos(a) * size * 0.80, Math.sin(a) * size * 0.80);
+          ctx.stroke();
+        }
+
+        // Center dot
+        ctx.beginPath();
+        ctx.arc(0, 0, 2.2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + rgb + ',0.9)';
+        ctx.fill();
+
+        ctx.restore();
+      }
+
       function init() {
         const rect = canvas.getBoundingClientRect();
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        width = rect.width;
+        width  = rect.width;
         height = rect.height;
-        canvas.width = width * dpr;
+        canvas.width  = width  * dpr;
         canvas.height = height * dpr;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-        const count = Math.min(90, Math.floor((width * height) / DENSITY));
-        particles = [];
-        for (let i = 0; i < count; i++) {
-          particles.push({
-            x: Math.random() * width,
-            y: Math.random() * height,
-            vx: (Math.random() - 0.5) * 0.35,  // slow drift
-            vy: (Math.random() - 0.5) * 0.35,
-            r: Math.random() * 1.6 + 1.0
-          });
-        }
       }
 
       function draw() {
         ctx.clearRect(0, 0, width, height);
+        const rgb = accentRGB();
+        const t   = frameCount / 60;
 
-        for (let i = 0; i < particles.length; i++) {
-          const p = particles[i];
-
-          // Move
-          p.x += p.vx;
-          p.y += p.vy;
-
-          // Bounce softly off the edges
-          if (p.x < 0 || p.x > width) p.vx *= -1;
-          if (p.y < 0 || p.y > height) p.vy *= -1;
-
-          // Gentle pull toward the cursor for a little life
-          if (mouse.x !== null) {
-            const dx = mouse.x - p.x;
-            const dy = mouse.y - p.y;
-            const dist = Math.hypot(dx, dy);
-            if (dist < 160 && dist > 0) {
-              p.x += (dx / dist) * 0.25;
-              p.y += (dy / dist) * 0.25;
-            }
+        // --- Constellations ---
+        for (let i = constellations.length - 1; i >= 0; i--) {
+          const c = constellations[i];
+          c.tick++;
+          if (c.state === 'in') {
+            c.alpha = Math.min(1, c.alpha + 0.022);
+            if (c.alpha >= 1) c.state = 'hold';
+          } else if (c.state === 'hold') {
+            if (c.tick > c.hold) c.state = 'out';
+          } else {
+            c.alpha = Math.max(0, c.alpha - 0.016);
+            if (c.alpha <= 0) { constellations.splice(i, 1); continue; }
           }
 
-          // Draw the dot
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(' + ACCENT + ', 0.45)';
-          ctx.fill();
+          // Connecting lines
+          for (const [a, b] of c.edges) {
+            const s1 = c.stars[a], s2 = c.stars[b];
+            ctx.beginPath();
+            ctx.moveTo(s1.x, s1.y);
+            ctx.lineTo(s2.x, s2.y);
+            ctx.strokeStyle = 'rgba(' + rgb + ',' + (c.alpha * 0.2) + ')';
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
 
-          // Connect to nearby particles
-          for (let j = i + 1; j < particles.length; j++) {
-            const q = particles[j];
-            const d = Math.hypot(p.x - q.x, p.y - q.y);
-            if (d < MAX_DIST) {
-              ctx.beginPath();
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(q.x, q.y);
-              ctx.strokeStyle = 'rgba(' + ACCENT + ',' + (0.1 * (1 - d / MAX_DIST)) + ')';
-              ctx.lineWidth = 1;
-              ctx.stroke();
-            }
+          // Twinkling stars
+          for (const s of c.stars) {
+            const twinkle = 0.5 + 0.5 * Math.sin(t * s.speed + s.phase);
+            const a = c.alpha * (0.45 + 0.55 * twinkle);
+            const r = s.r * (0.7 + 0.3 * twinkle);
+            const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r * 4.5);
+            g.addColorStop(0, 'rgba(' + rgb + ',' + (a * 0.55) + ')');
+            g.addColorStop(1, 'rgba(' + rgb + ',0)');
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, r * 4.5, 0, Math.PI * 2);
+            ctx.fillStyle = g;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(' + rgb + ',' + a + ')';
+            ctx.fill();
           }
         }
+
+        // --- Claude icons ---
+        for (let i = claudeIcons.length - 1; i >= 0; i--) {
+          const ic = claudeIcons[i];
+          ic.tick++;
+          if (ic.state === 'in') {
+            ic.alpha = Math.min(0.55, ic.alpha + 0.011);
+            if (ic.alpha >= 0.55) ic.state = 'hold';
+          } else if (ic.state === 'hold') {
+            if (ic.tick > ic.hold) ic.state = 'out';
+          } else {
+            ic.alpha = Math.max(0, ic.alpha - 0.009);
+            if (ic.alpha <= 0) { claudeIcons.splice(i, 1); continue; }
+          }
+          drawClaude(ic.x, ic.y, ic.size, ic.alpha);
+        }
+
+        // --- Spawn logic ---
+        if (frameCount >= nextConstFrame) {
+          spawnConstellation();
+          nextConstFrame = frameCount + 200 + Math.floor(Math.random() * 120); // ~3.5–5.5 s
+        }
+        if (frameCount >= nextClaudeFrame) {
+          spawnClaude();
+          nextClaudeFrame = frameCount + 700 + Math.floor(Math.random() * 500); // ~12–20 s
+        }
+
+        frameCount++;
         animationId = requestAnimationFrame(draw);
       }
 
-      // Track the cursor relative to the canvas
-      canvas.parentElement.addEventListener('mousemove', (e) => {
-        const rect = canvas.getBoundingClientRect();
-        mouse.x = e.clientX - rect.left;
-        mouse.y = e.clientY - rect.top;
-      });
-      canvas.parentElement.addEventListener('mouseleave', () => { mouse.x = mouse.y = null; });
-
-      // Pause the loop when the hero scrolls out of view (saves CPU/battery)
+      // Pause when hero scrolls out of view
       const heroObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (reduceMotion) return;
@@ -1591,20 +1737,25 @@
       }, { threshold: 0 });
       heroObserver.observe(canvas);
 
-      // Rebuild on resize
       let resizeTimer;
       window.addEventListener('resize', () => {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => { init(); if (reduceMotion) draw(); }, 200);
+        resizeTimer = setTimeout(() => { init(); }, 200);
       });
 
-      // Kick things off
+      // Kick things off — pre-spawn so the canvas isn't empty on first load
       init();
+      spawnConstellation();
+      spawnConstellation();
+      nextConstFrame = 260;
+
       if (reduceMotion) {
-        // single static frame, no animation loop
+        constellations.forEach(c => { c.alpha = 1; c.state = 'hold'; });
         draw();
         cancelAnimationFrame(animationId);
         animationId = null;
+      } else {
+        animationId = requestAnimationFrame(draw);
       }
     })();
 
